@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication , QPushButton, QWidget,  QLabel, QHBoxLayout, QVBoxLayout, QListWidget, QFileDialog
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
-from PIL import Image
+from PIL import Image, ImageFilter
 import os
 
 app = QApplication([])
@@ -118,6 +118,32 @@ class ImageProcesor():
         self.showImage(obj)
         
 
+    def do_button_left(self):
+        self.image = self.image.transpose(Image.ROTATE_270)
+        obj = os.path.join(workdir,self.save_dir, self.filename )
+        self.SaveImage()
+        self.showImage(obj)
+
+    
+    def do_button_right(self):
+        self.image = self.image.transpose(Image.ROTATE_90)
+        obj = os.path.join(workdir,self.save_dir, self.filename )
+        self.SaveImage()
+        self.showImage(obj)
+
+    def do_button_Mirror(self):
+        self.image = self.image.transpose(Image.FLIP_LEFT_RIGHT)
+        obj = os.path.join(workdir,self.save_dir, self.filename )
+        self.SaveImage()
+        self.showImage(obj)
+
+
+    def do_button_Sharpness(self):
+        self.image = self.image.filter(ImageFilter.SHARPEN)
+        obj = os.path.join(workdir,self.save_dir, self.filename )
+        self.SaveImage()
+        self.showImage(obj)
+
 
 def showChoosenImage():
     if List_Widget.currentRow() >=0:
@@ -137,6 +163,10 @@ Button_Folder.clicked.connect(showFilenamesList)
 obj = ImageProcesor()
 List_Widget.currentRowChanged.connect(showChoosenImage)
 button_BW.clicked.connect(obj.do_bw)
+button_left.clicked.connect(obj.do_button_left)
+button_Right.clicked.connect(obj.do_button_right)
+button_Mirror.clicked.connect(obj.do_button_Mirror)
+button_Sharpness.clicked.connect(obj.do_button_Sharpness)
 app.exec()
 
 
