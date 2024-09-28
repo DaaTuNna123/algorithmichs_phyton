@@ -1,64 +1,73 @@
-# from PIL import Image
+import pygame as pg
+import sys
+from settings import *
+from map import *
+from player import *
+from raycasting import *
+from object_renderer import *
+from sprite_object import *
+from object_handler import *
+from weapon import *
+from sound import *
+from pathfinding import *
 
 
-# a = "original.jpg"
+class Game:
+    def __init__(self):
+        pg.init()
+        pg.mouse.set_visible(False)
+        self.screen = pg.display.set_mode(RES)
+        pg.event.set_grab(True)
+        self.clock = pg.time.Clock()
+        self.delta_time = 1
+        self.global_trigger = False
+        self.global_event = pg.USEREVENT + 0
+        pg.time.set_timer(self.global_event, 40)  # Set a timer for regular updates
+        self.new_game()
 
-# #open file with the original image
+    def new_game(self):
+        self.map = Map(self)  # Create the game map
+        self.player = Player(self)  # Create the player character
+        self.object_renderer = ObjectRenderer(self)  # Handle rendering of objects
+        self.raycasting = RayCasting(self)  # Perform raycasting to generate 3D view
+        self.object_handler = ObjectHandler(self)  # Manage in-game objects and interactions
+        self.weapon = Weapon(self)  # Handle the player's weapon
+        self.sound = Sound(self)  # Play sound effects and music
+        self.pathfinding = PathFinding(self)  # Implement pathfinding for enemies
+        pg.mixer.music.play(-1)  # Start background music
 
-# with Image.open(a) as file:
-#     print(file.size)
-#     print(file.mode)
-#     print(file.format)
+    def update(self):
+        self.player.update()  # Update player position and actions
+        self.raycasting.update()  # Update raycasting for each frame
+        self.object_handler.update()  # Update objects and their behavior
+        self.weapon.update()  # Update weapon state and animations
+        pg.display.flip()  # Update the display with rendered content
+        self.delta_time = self.clock.tick(FPS)  # Calculate and limit frame rate
+        pg.display.set_caption(f'{self.clock.get_fps() :.1f}')  # Set window title to display FPS
 
-# pic_gray = original.convert('L')
-# pic_blured = original.filter(ImageFilter.BLUR)
-# pic_up = original.transpose(Image.ROTATE_180)
+    def draw(self):
+        # self.screen.fill('black')  # Optionally clear the screen
+        self.object_renderer.draw()  # Draw objects (walls, sprites)
+        self.weapon.draw()  # Draw the player's weapon
+        # self.map.draw()  # Optionally draw the map
+        # self.player.draw()  # Optionally draw the player
 
-# pic_gray.save('gray.jpg')
-# pic_blured.save('blured.jpg')
-# pic_up.save('uo.jpg')
+    def check_events(self):
+        self.global_trigger = False  # Reset global trigger flag
+        for event in pg.event.get():
+            if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE):
+                pg.quit()
+                sys.exit()  # Quit the game
+            elif event.type == self.global_event:
+                self.global_trigger = True  # Set global trigger for regular updates
+            self.player.single_fire_event(event)  # Handle player actions from events
 
-# image.FLIP_LEFT_RIGHT
+    def run(self):
+        while True:
+            self.check_events()  # Check for events (keyboard, mouse, etc.)
+            self.update()  # Update game logic for each frame
+            self.draw()  # Draw the game state to the screen
 
-
-
-
-from PIL import Image
-from PIL import ImageFilter
-
-with Image.open('original.jpg') as file:
-    print(file.size)
-    print(file.mode)
-    print(file.format)
-
-
-with Image.open('original.jpg') as pic_original:
- 
- pic_original.show()
- pic_gray = pic_original.convert('L') 
- pic_gray.save('gray.jpg')
- pic_gray.show()
-
- pic_blured = pic_original.filter(ImageFilter.BLUR)
- pic_blured.save('blured.jpg')
- pic_blured.show()
- 
- pic_up = pic_original.transpose(Image.ROTATE_180)
- pic_up.save('up.jpg')
- pic_up.show()
-
- pic_up = pic_gray.transpose(Image.ROTATE_180)
- pic_up.save('up.jpg')
- pic_up.show()
-
-pic_flip = pic_original.image.FLIP_LEFT_RIGHT
-pic_flip.save('miror.jpg')
-pic_flip.show()
-#pic_mirror = pic_original
-
-#change the color of original to white and black 
-
-#make the image blur 
-
-#rotate original by 180 degrees
-
+if __name__ == '__main__':
+    game = Game()
+    game.run()
